@@ -4,43 +4,43 @@
 [![Docker stars](https://img.shields.io/docker/stars/jrcs/letsencrypt-nginx-proxy-companion.svg)](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion "Click to view the image on Docker Hub")
 [![Docker pulls](https://img.shields.io/docker/pulls/jrcs/letsencrypt-nginx-proxy-companion.svg)](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion "Click to view the image on Docker Hub")
 
-**letsencrypt-nginx-proxy-companion** is a lightweight companion container for [**nginx-proxy**](https://github.com/jwilder/nginx-proxy).
+**letsencrypt-nginx-proxy-companion**是[**nginx-proxy**](https://github.com/jwilder/nginx-proxy)的轻量级伴随容器。 
 
-It handles the automated creation, renewal and use of Let's Encrypt certificates for proxyed Docker containers.
+它处理代理Docker容器的Let's Encrypt证书的自动创建，更新和使用。 
 
-Please note that [letsencrypt-nginx-proxy-companion does not work with ACME v2 endpoints yet](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/issues/319).
+请注意，[letsencrypt-nginx-proxy-companion尚不适用于ACME v2端点](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/issues/319)。
 
-### Features:
-* Automated creation/renewal of Let's Encrypt (or other ACME CAs) certificates using [**simp_le**](https://github.com/zenhack/simp_le).
-* Let's Encrypt / ACME domain validation through `http-01` challenge only.
-* Automated update and reload of nginx config on certificate creation/renewal.
-* Support creation of Multi-Domain (SAN) Certificates.
-* Creation of a Strong Diffie-Hellman Group at startup.
-* Work with all versions of docker.
+### 特点:
+* 使用[**simp_le**](https://github.com/zenhack/simp_le)自动创建/续订Let's Encrypt(其他ACME CA)证书。 
+* Let's Encrypt / ACME仅通过 `http-01`来进行域验证。 
+* 在证书创建/续订时自动更新和重新加载nginx配置。 
+* 支持创建多域（SAN）证书。 
+* 在启动时自动创建一个强力的Diffie-Hellman 组。 
+* 适用所有版本的docker。
 
-### Requirements:
-* Your host **must** be publicly reachable on **both** port `80` and `443`.
-* Check your firewall rules and **do not attempt to block port `80`** as that will prevent `http-01` challenges from completing.
-* For the same reason, you can't use nginx-proxy's [`HTTPS_METHOD=nohttp`](https://github.com/jwilder/nginx-proxy#how-ssl-support-works).
-* The (sub)domains you want to issue certificates for must correctly resolve to the host.
-* Your DNS provider must [answers correctly to CAA record requests](https://letsencrypt.org/docs/caa/).
-* If your (sub)domains have AAAA records set, the host must be publicly reachable over IPv6 on port `80` and `443`.
+### 要求：
+* 您的主机**必须**在端口80和443上**都**可公开访问。
+* 检查您的防火墙规则，**不要试图阻止端口80**，因为这将阻止`http-01`质询完成。 
+* 出于同样的原因，你不能使用nginx-proxy的[`HTTPS_METHOD=nohttp`](https://github.com/jwilder/nginx-proxy#how-ssl-support-works)。 
+* 您要颁发证书的（子）域名必须已正确设置解析。 
+* 您的DNS提供商必须[正确回答CAA记录请求](https://letsencrypt.org/docs/caa/)。 
+* 如果您的（子）域名设置了AAAA记录，则端口80和443必须可以在IPv6上公开访问。
 
 ![schema](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/blob/master/schema.png)
 
-## Basic usage (with the nginx-proxy container)
+## B基本用法(基于nginx-proxy容器)
 
-Three writable volumes must be declared on the **nginx-proxy** container so that they can be shared with the **letsencrypt-nginx-proxy-companion** container:
+必须在**nginx-proxy**容器上声明三个可写卷，以便可以与**letsencrypt-nginx-proxy-companion**容器共享它们：
 
-* `/etc/nginx/certs` to store certificates, private keys and ACME account keys (readonly for the **nginx-proxy** container).
-* `/etc/nginx/vhost.d` to change the configuration of vhosts (required so the CA may access `http-01` challenge files).
-* `/usr/share/nginx/html` to write `http-01` challenge files.
+* `/etc/nginx/certs` 用来存储证书，私钥和ACME帐户密钥（对**nginx-proxy**容器只读）。 
+* `/etc/nginx/vhost.d` 用来存储自定义vhosts配置文件（必须的，这样CA才可以访问`http-01` 质询文件）。 
+* `/usr/share/nginx/html` 用来写入`http-01` 质询文件。
 
-Example of use:
+用法示例：
 
-### Step 1 - nginx-proxy
+### 第一步 - nginx-proxy
 
-Start **nginx-proxy** with the three additional volumes declared:
+使用声明的三个独立卷启动**nginx-proxy**：
 
 ```shell
 $ docker run --detach \
@@ -54,11 +54,11 @@ $ docker run --detach \
     jwilder/nginx-proxy
 ```
 
-Binding the host docker socket (`/var/run/docker.sock`) inside the container to `/tmp/docker.sock` is a requirement of **nginx-proxy**.
+将宿主机docker socket(`/var/run/docker.sock`)绑定到`/tmp/docker.sock`是**nginx-proxy**的要求。
 
-### Step 2 - letsencrypt-nginx-proxy-companion
+### 第二步 - letsencrypt-nginx-proxy-companion
 
-Start the **letsencrypt-nginx-proxy-companion** container, getting the volumes from **nginx-proxy** with `--volumes-from`:
+启动**letsencrypt-nginx-proxy-companion**容器，使用`--volumes-from`从**nginx-proxy**获取共享卷：
 
 ```shell
 $ docker run --detach \
@@ -68,15 +68,15 @@ $ docker run --detach \
     jrcs/letsencrypt-nginx-proxy-companion
 ```
 
-The host docker socket has to be bound inside this container too, this time to `/var/run/docker.sock`.
+宿主机docker socket也必须绑定在这个容器中，这次是绑定到`/var/run/docker.sock`。
 
-### Step 3 - proxyed container(s)
+### 第三步 - 被代理容器
 
-Once both **nginx-proxy** and **letsencrypt-nginx-proxy-companion** containers are up and running, start any container you want proxyed with environment variables `VIRTUAL_HOST` and `LETSENCRYPT_HOST` both set to the domain(s) your proxyed container is going to use.
+一旦**nginx-proxy**和**letsencrypt-nginx-proxy-companion**器启动并运行，启动需要代理的容器，把环境变量`VIRTUAL_HOST`和`LETSENCRYPT_HOST`都设置为要代理容器使用的域名.
 
 [`VIRTUAL_HOST`](https://github.com/jwilder/nginx-proxy#usage) control proxying by **nginx-proxy** and `LETSENCRYPT_HOST` control certificate creation and SSL enabling by **letsencrypt-nginx-proxy-companion**.
 
-Certificates will only be issued for containers that have both `VIRTUAL_HOST` and `LETSENCRYPT_HOST` variables set to domain(s) that correctly resolve to the host, provided the host is publicly reachable.
+只有当`VIRTUAL_HOST`和`LETSENCRYPT_HOST`都设置为正确解析的主机域名时且当主机可公开访问时，才会签发证书。
 
 ```shell
 $ docker run --detach \
@@ -87,13 +87,13 @@ $ docker run --detach \
     nginx
 ```
 
-Albeit **optional**, it is **recommended** to provide a valid email address through the `LETSENCRYPT_EMAIL` environment variable, so that Let's Encrypt can warn you about expiring certificates and allow you to recover your account.
+虽然是**可选**的，但**建议**通过`LETSENCRYPT_EMAIL`环境变量提供有效的电子邮件地址，以便Let's Encrypt可以警告您证书过期并允许您恢复帐户。 
 
-The containers being proxied must expose the port to be proxied, either by using the `EXPOSE` directive in their Dockerfile or by using the `--expose` flag to `docker run` or `docker create`.
+被代理的容器必须通过在其Dockerfile中使用`EXPOSE`指令或使用`--expose`标志到`docker run` 或`docker create`来暴露要代理的端口。 
 
-If the proxyed container listen on and expose another port than the default `80`, you can force **nginx-proxy** to use this port with the [`VIRTUAL_PORT`](https://github.com/jwilder/nginx-proxy#multiple-ports) environment variable.
+如果代理容器侦听并暴露另一个端口而不是默认值`80`，则可以通过[`VIRTUAL_PORT`](https://github.com/jwilder/nginx-proxy#multiple-ports)环境变量强制**nginx-proxy**使用此端口。
 
-Example using [Grafana](https://hub.docker.com/r/grafana/grafana/) (expose and listen on port 3000):
+使用[Grafana](https://hub.docker.com/r/grafana/grafana/)的示例（监听并暴露3000端口）：
 
 ```shell
 $ docker run --detach \
@@ -105,8 +105,8 @@ $ docker run --detach \
     grafana/grafana
 ```
 
-Repeat [Step 3](#step-3---proxyed-containers) for any other container you want to proxy.
+重复 [第三步](#第三步 - 被代理容器) 来增加需要代理的其他容器。
 
-## Additional documentation
+## 附加文件
 
-Please check the [docs section](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/tree/master/docs) or the [project's wiki](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/wiki).
+请查看[docs section](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/tree/master/docs)或[project's wiki](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/wiki)。
