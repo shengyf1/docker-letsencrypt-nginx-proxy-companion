@@ -110,3 +110,5 @@ $ docker run --detach \
 ## 附加文件
 
 请查看[docs section](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/tree/master/docs)或[project's wiki](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/wiki)。
+
+请查看[与Docker Compose一起使用](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion/wiki/Docker-Compose)
